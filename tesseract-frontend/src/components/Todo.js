@@ -61,7 +61,7 @@ const Todo = ({
                     <TiEdit
             onClick={() =>setEdit({
                 id: todo.id,
-                value: todo.text,
+                value: todo.title,
                 description: todo.description,
               })
             }

@@ -2,44 +2,45 @@ import React, { useState } from "react";
 import TodoForm from "./TodoForm";
 import Todo from "./Todo";
 import { useEffect } from "react";
-import {createTodo, actualizar, eliminar, } from "./conection";
+import { createTodo, updateToDo, updateIsDone, deleteTodo, } from "./requests";
 
 
 
 //Crear To Do list
 function TodoList() {
   const [todos, setTodos] = useState([]);
-  
-  const getRequest = async () => {
+
+  const getTodos = async () => {
     const respuesta = await fetch('http://localhost:4000/v1/to-dos');
     const respuestaJson = await respuesta.json();
-    console.log("acaaaaaaaaaaa",respuestaJson.todos);
+    respuestaJson.todos.forEach(element => {
+      element.is_done = Boolean(element.is_done);
+    });
     setTodos(respuestaJson.todos);
   };
 
+
   useEffect(() => {
-    getRequest();
+    getTodos();
   }, []);
 
   //Añadir elementos al To Do List
-  const addTodo = async  (todo) => {
-   
+  const addTodo = async (todo) => {
+
     if (!todo.text || /^\s*$/.test(todo.text)) {
-      return ;
+      return;
     }
-    console.log("acaaaaa2",todo)
+    console.log("acaaaaa2", todo)
     const temp = {
       title: todo.text,
       description: todo.description,
-      is_done:todo.is_done
+      is_done: todo.is_done
     }
     const todoId = await createTodo(todo);
     todo.id = todoId.id;
- //   console.log(todo)
     const newTodos = [temp, ...todos];
 
-    setTodos(newTodos);
-    console.log(...todos);
+    getTodos();
   };
 
   //Mostrat la descripción
@@ -53,24 +54,20 @@ function TodoList() {
     setTodos(updatedTodos);
   };
 
-  
+
   //Actualizar Elementos en el To Do List
   const updateTodo = (todoId, newValue) => {
-   actualizar(todoId,newValue)
+    updateToDo(todoId, newValue);
+    getTodos();
+    getTodos();
     if (!newValue.text || /^\s*$/.test(newValue.text)) {
       return;
     }
-    setTodos((prev) =>
-      prev.map((item) => (item.id === todoId ? newValue : item))
-      );
-     console.log(todoId)
   };
-
-
 
   //Eliminar Elementos del To Do List
   const removeTodo = (id) => {
-    eliminar(id);
+    deleteTodo(id);
     const removedArr = [...todos].filter((todo) => todo.id !== id);
 
     setTodos(removedArr);
@@ -78,17 +75,9 @@ function TodoList() {
 
   //Marcar como "Done"
   const completeTodo = (id) => {
-
-    let updatedTodos = todos.map((todo) => {
-      if (todo.id === id) {
-        todo.is_done = !todo.is_done;
-      }
-     actualizar(id,todo)
-     console.log("assssssssssssssssssssssssss",todo);
-      return todo;
-      
-    });
-    setTodos(updatedTodos);
+    updateIsDone(id);
+    getTodos();
+    getTodos();
 
   };
 
